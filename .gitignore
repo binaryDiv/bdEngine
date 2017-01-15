@@ -1,0 +1,9 @@
+.*.swp
+
+bin/
+build/
+_ignore/
+
+.clang_complete
+.gcc-flags.json
+
