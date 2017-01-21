@@ -20,37 +20,24 @@ namespace bdEngine {
 RenderWindow::RenderWindow()
 	: window_ {640, 480, "bdEngine test application"}  // XXX Arguments!
 {
-	// XXX exceptions
+	// Get framebuffer size
+	fbSize_ = window_.getFramebufferSize();
 	
-	// Initialize GLFW library (immediately returns true if already initialized) XXX
-	// GLFW::initLib();
-	
-	// XXX Error handling!
-	// void error_callback(int error, const char* description) {
-	//	 fprintf(stderr, "Error: %s\n", description);
-	// }
-	// glfwSetErrorCallback(error_callback);
-	
-	// Set event callbacks
+	// XXX Set event callbacks
 	window_.setKeyCallback(std::bind(&RenderWindow::_test_key_callback, this, _1, _2, _3, _4, _5));
 }
 
 RenderWindow::~RenderWindow() {
-	// XXX nothing to do, let GLFW::Window::~Window() do all the work
+	// Nothing to do, let GLFW::Window::~Window() do all the work.
 }
 
 
 /*******************************************************************
  * Context and main loop
  *******************************************************************/
-// TODO
 
-
-/*******************************************************************
- * XXX Test functions
- *******************************************************************/
-
-void RenderWindow::_test_run() {
+/*! Makes window context current and prepares rendering. */
+void RenderWindow::activateContext() {
 	// Switch to context
 	GLFW::makeContextCurrent(window_);
 	
@@ -60,27 +47,41 @@ void RenderWindow::_test_run() {
 	// Set swap interval to >0 to avoid screen tearing
 	GLFW::setSwapInterval(1);
 	
-	// XXX -> Engine
-	//Renderer renderer {};
-	
-	// Main loop: exit when window is closed
-	while (!window_.shouldClose()) {
-		// Get framebuffer size
-		GLFW::Size2D fbSize = window_.getFramebufferSize();
-		//double ratio = fbSize.width / (double) fbSize.height; // XXX
-		
-		glViewport(0, 0, fbSize.width, fbSize.height);
-		glClear(GL_COLOR_BUFFER_BIT);
-		
-		// TODO DO THE RENDERY THING
-		
-		// XXX
-		//renderer.drawFrame(*this, fbSize.width, fbSize.height);
-		
-		window_.swapBuffers();
-		GLFW::pollEvents();
-	}
+	// Now the context can be used.
 }
+
+/*! Returns true until window is supposed to close. */
+bool RenderWindow::keepRunning() {
+	return !window_.shouldClose();
+}
+
+/*! Signal render window to stop the main loop in order to close the window. */
+void RenderWindow::stop() {
+	window_.setShouldClose(true);
+}
+
+/*! Prepare rendering of one frame. */
+void RenderWindow::beginFrame() {
+	// Update framebuffer size
+	fbSize_ = window_.getFramebufferSize();
+}
+
+/*! End rendering of one frame. This will swap buffers.*/
+void RenderWindow::endFrame() {
+	// Swap buffers.
+	window_.swapBuffers();
+}
+
+/*! Poll and handle events. */
+void RenderWindow::handleEvents() {
+	// TODO Do the input thing (do we need to do more than pollEvents()?)
+	GLFW::pollEvents();
+}
+
+
+/*******************************************************************
+ * XXX Test functions
+ *******************************************************************/
 
 void RenderWindow::_test_key_callback(GLFW::Window& window, GLFW::KeyCode key, int scancode,
 	GLFW::InputAction action, GLFW::KeyModifier mods)
