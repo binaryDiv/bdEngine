@@ -12,12 +12,14 @@ public:
 	 *******************************************************************/
 	
 	/*!
-	 * Default constructor. Initializes everything.
+	 * Default constructor. Sets up data structures and stuff, but does not
+	 * initialize graphics or anything yet. See init().
 	 */
 	Engine();
 	
 	/*!
- 	 * Constructor that parses application arguments and initializes everything.
+ 	 * Constructor that parses application arguments and does everything the
+ 	 * default constructor does. See Engine().
  	 * (May alter argc and argv.)
  	 *
 	 * @param  argc  Reference to application argc.
@@ -29,6 +31,23 @@ public:
 	/*******************************************************************
 	 * Engine lifecycle (initialization and main loop)
 	 *******************************************************************/
+	 
+ 	/*!
+ 	 * Initialize engine. This will set everything up, create a RenderWindow,
+ 	 * initialize graphics driver, load resource, and so on.
+ 	 *
+ 	 * This function has to be called before any component of the engine is
+ 	 * used or any graphics is done.
+ 	 */
+ 	void init();
+	
+	/*!
+	 * Returns true if engine is initialized, that is, after init() has been
+	 * called.
+	 */
+	bool isInitialized() const {
+		return initialized_;
+	}
 	
 	/*!
 	 * Starts engine main loop.
@@ -39,7 +58,11 @@ public:
 	int run();
 
 private:
-	RenderWindow renderWindow;
+	// Initialization state
+	bool initialized_ = false;
+	
+	// Component: RenderWindow (contains the Renderer instance)
+	std::unique_ptr<RenderWindow> renderWindow_;
 };
 
 } // end namespace bdEngine

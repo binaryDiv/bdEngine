@@ -1,30 +1,57 @@
 #include "RenderWindow.h"
 
-#include <iostream>
-// #include "Renderer.h"  // XXX
+#include <functional>
 
 using namespace std::placeholders;
 
-// XXX
+// TODO implement own logging class
+#include <iostream>
 using std::cout;
 using std::cerr;
 using std::endl;
 
 namespace bdEngine {
 
-
 /*******************************************************************
  * Construction and destruction
  *******************************************************************/
 
 RenderWindow::RenderWindow()
-	: window_ {640, 480, "bdEngine test application"}  // XXX Arguments!
 {
-	// Get framebuffer size
-	fbSize_ = window_.getFramebufferSize();
+	// Initialize GLFW
+	GLFW::initLib();
 	
-	// XXX Set event callbacks
-	window_.setKeyCallback(std::bind(&RenderWindow::_test_key_callback, this, _1, _2, _3, _4, _5));
+	// Set GLFW window hints
+	// -> require OpenGL 3.3 and use core profile
+	GLFW::setWindowHint(GLFW::WindowHint::ContextVersionMajor, 3);
+	GLFW::setWindowHint(GLFW::WindowHint::ContextVersionMinor, 3);
+	GLFW::setWindowHint(GLFW::WindowHint::OpenGLProfile, GLFW::OpenGLProfile::Core);
+	
+	// Create GLFW::Window instance (which will actually create and open the window)
+	window_ = std::make_unique<GLFW::Window>(640, 480, "bdEngine test application");
+	
+	// Make context current
+	GLFW::makeContextCurrent(*window_);
+	
+	// Initialize GLEW to load GL extensions
+	glewExperimental = GL_TRUE;
+	if (glewInit() != GLEW_OK) {
+		throw std::runtime_error("Failed to initialize GLEW.");
+	}
+	
+	// Set swap interval to >0 to avoid screen tearing
+	GLFW::setSwapInterval(1);
+	
+	// Set event callbacks
+	window_->setKeyCallback(std::bind(&RenderWindow::_test_key_callback, this, _1, _2, _3, _4, _5));
+	
+	// Create Renderer instance
+	renderer_ = std::make_unique<Renderer>();
+	
+	// Get framebuffer size and apply to renderer
+	// XXX callback for resizing
+	GLFW::Size2D fbSize = window_->getFramebufferSize();
+	renderer_->setWindowSize(fbSize.width, fbSize.height);
 }
 
 RenderWindow::~RenderWindow() {
@@ -36,40 +63,18 @@ RenderWindow::~RenderWindow() {
  * Context and main loop
  *******************************************************************/
 
-/*! Makes window context current and prepares rendering. */
-void RenderWindow::activateContext() {
-	// Switch to context
-	GLFW::makeContextCurrent(window_);
-	
-	// XXX load extension loader library?
-	// gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-	
-	// Set swap interval to >0 to avoid screen tearing
-	GLFW::setSwapInterval(1);
-	
-	// Now the context can be used.
-}
-
-/*! Returns true until window is supposed to close. */
-bool RenderWindow::keepRunning() {
-	return !window_.shouldClose();
-}
-
 /*! Signal render window to stop the main loop in order to close the window. */
 void RenderWindow::stop() {
-	window_.setShouldClose(true);
+	window_->setShouldClose(true);
 }
 
-/*! Prepare rendering of one frame. */
-void RenderWindow::beginFrame() {
-	// Update framebuffer size
-	fbSize_ = window_.getFramebufferSize();
-}
-
-/*! End rendering of one frame. This will swap buffers.*/
-void RenderWindow::endFrame() {
-	// Swap buffers.
-	window_.swapBuffers();
+/*! Draw one single frame, calling the Renderer and swapping buffers. */
+void RenderWindow::drawFrame() {
+	// Call Renderer to render frame
+	renderer_->drawFrame();
+	
+	// Swap buffers
+	window_->swapBuffers();
 }
 
 /*! Poll and handle events. */

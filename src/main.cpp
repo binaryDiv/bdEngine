@@ -6,8 +6,11 @@ int main(int argc, char* argv[]) {
 	int exitCode = 0;
 	
 	try {
-		// Create and initialize engine
+		// Create engine
 		bdEngine::Engine engine {argc, argv};
+		
+		// Initialize engine and components
+		engine.init();
 		
 		// std::cout << "press q to quit" << std::endl;
 		// std::cout << "press k to turn left" << std::endl;

@@ -1,8 +1,11 @@
 #ifndef _BDENGINE_RENDERWINDOW_H
 #define _BDENGINE_RENDERWINDOW_H
 
-// #include <glad/glad.h> // XXX?
+// GLEW has to be included *before* GLFW or any other OpenGL header.
+#include <GL/glew.h>
 #include "GLFWpp.h"
+
+#include "Renderer.h"
 
 namespace bdEngine {
 
@@ -20,16 +23,12 @@ public:
 	 *******************************************************************/
 	
 	/*!
-	 * Makes window context current and prepares rendering.
-	 * (This function needs to be called once before any rendering is done.)
-	 */
-	void activateContext();
-	
-	/*!
 	 * Returns true until window is supposed to close, that is, until stop()
 	 * is called.
 	 */
-	bool keepRunning();
+	bool keepRunning() const {
+		return !window_->shouldClose();
+	}
 	
 	/*!
 	 * Signal render window to stop the main loop in order to close the window.
@@ -38,14 +37,10 @@ public:
 	void stop();
 	
 	/*!
-	 * Prepare rendering of one frame. End frame with endFrame().
+	 * Draws one single frame. This will prepare drawing, call the Renderer
+	 * and finish drawing by swapping buffers.
 	 */
-	void beginFrame();
-	
-	/*!
-	 * End rendering of one frame. This will swap buffers.
-	 */
-	void endFrame();
+	void drawFrame();
 	
 	/*!
 	 * Poll and handle events.
@@ -57,20 +52,6 @@ public:
 	 * Properties
 	 *******************************************************************/
 	
-	/*!
-	 * Returns width of framebuffer. Value is updated in every beginFrame().
-	 */
-	inline int getFramebufferWidth() {
-		return fbSize_.width;
-	}
-	
-	/*!
-	 * Returns height of framebuffer. Value is updated in every beginFrame().
-	 */
-	inline int getFramebufferHeight() {
-		return fbSize_.height;
-	}
-	
 	
 	/*******************************************************************
 	 * XXX Test functions
@@ -80,10 +61,10 @@ public:
 
 private:
 	/*! The actual window instance. */
-	GLFW::Window window_;
+	std::unique_ptr<GLFW::Window> window_;
 	
-	/*! Current frame buffer size (updated in every beginFrame()). */
-	GLFW::Size2D fbSize_;
+	/*! Renderer instance. This is the actual graphics driver. */
+	std::unique_ptr<Renderer> renderer_;
 };
 
 } // end namespace bdEngine

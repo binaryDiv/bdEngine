@@ -1,8 +1,8 @@
 # == CG_Projekt Makefile ==
 
 # GL
-GL_LIBS := $(shell pkg-config --libs glfw3 gl)
-GL_INCLUDES := $(shell pkg-config --cflags glfw3)
+GL_LIBS := $(shell pkg-config --libs glfw3 glew)
+GL_INCLUDES := $(shell pkg-config --cflags glfw3 glew)
 
 # C++ flags
 CXX := clang++

@@ -1,7 +1,8 @@
 #include "Engine.h"
 
-namespace bdEngine {
+#include <exception>
 
+namespace bdEngine {
 
 /*******************************************************************
  * Construction and destruction
@@ -9,7 +10,6 @@ namespace bdEngine {
 
 // Default constructor
 Engine::Engine() {
-	// TODO Template stub
 }
 
 // Constructor with application argument parsing
@@ -24,30 +24,34 @@ Engine::Engine(int& argc, char**& argv)
  * Engine lifecycle
  *******************************************************************/
 
+// Initialization
+void Engine::init() {
+	if (initialized_) {
+		// Engine already is initialized!
+		throw std::logic_error("Engine already initialized.");
+	}
+	
+	// Create and initialize RenderWindow
+	renderWindow_ = std::make_unique<RenderWindow>();
+	
+	// Initialized!
+	initialized_ = true;
+}
+
 // Main loop (returns exit code)
 int Engine::run() {
-	// Make window context current
-	renderWindow.activateContext();
+	// Ensure the engine is initialized.
+	if (!initialized_) {
+		throw std::logic_error("Engine not initialized.");
+	}
 	
 	// Main loop: exit when window is closed
-	while (renderWindow.keepRunning()) {
-		// Prepare render window to begin rendering one frame.
-		renderWindow.beginFrame();
-		
-		
-		// TODO DO THE RENDERY THING
-		
-		// XXX -> move to Renderer
-		glViewport(0, 0, renderWindow.getFramebufferWidth(),
-			renderWindow.getFramebufferHeight());
-		glClear(GL_COLOR_BUFFER_BIT);
-		
-		
-		// End rendering of this frame, swap buffers, etc.
-		renderWindow.endFrame();
+	while (renderWindow_->keepRunning()) {
+		// Render the current frame
+		renderWindow_->drawFrame();
 		
 		// Poll and handle events, call event handlers, etc.
-		renderWindow.handleEvents();
+		renderWindow_->handleEvents();
 	}
 	
 	return 0;
