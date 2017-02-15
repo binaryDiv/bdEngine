@@ -5,6 +5,8 @@
 #include <GL/glew.h>
 #include "GLFWpp.h"
 
+#include "GLShaderProgram.h"
+
 namespace bdEngine {
 
 class Renderer {
@@ -14,6 +16,12 @@ public:
 	 *******************************************************************/
 	Renderer();
 	~Renderer();
+	
+	// --- Forbid copy and move operations
+	Renderer(const Renderer& other)            = delete;  // copy constructor
+	Renderer& operator=(const Renderer& other) = delete;  // copy assignment
+	Renderer(Renderer&& other)                 = delete;  // move constructor
+	Renderer& operator=(Renderer&& other)      = delete;  // move assignment
 	
 	
 	/*******************************************************************
@@ -25,6 +33,21 @@ public:
 	
 	// Draw one frame
 	void drawFrame();
+	
+	// Switch between wireframe and filling mode
+	bool toggleWireframeMode();
+	
+private:
+	// Shader program object
+	GLShaderProgram shaderProgram;
+	
+	// XXX Example objects
+	GLuint exVAO;  // Vertex Array Object
+	GLuint exVBO;  // Vertex Buffer Object
+	GLuint exEBO;  // Element Buffer Object
+	
+	// Settings
+	bool wireframeMode = false;
 };
 
 } // end namespace bdEngine

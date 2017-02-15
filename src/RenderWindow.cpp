@@ -49,9 +49,11 @@ RenderWindow::RenderWindow()
 	renderer_ = std::make_unique<Renderer>();
 	
 	// Get framebuffer size and apply to renderer
-	// XXX callback for resizing
 	GLFW::Size2D fbSize = window_->getFramebufferSize();
 	renderer_->setWindowSize(fbSize.width, fbSize.height);
+	
+	// Set callback for window resize event
+	window_->setWindowSizeCallback(std::bind(&Renderer::setWindowSize, renderer_.get(), _2, _3));
 }
 
 RenderWindow::~RenderWindow() {
@@ -93,21 +95,29 @@ void RenderWindow::_test_key_callback(GLFW::Window& window, GLFW::KeyCode key, i
 {
 	const char* keyname = GLFW::getKeyName(key, scancode);
 	
-	if (keyname == nullptr) {
-		cout << "Key callback: " << scancode;
-	}
-	else {
-		cout << "Key callback: '" << keyname << "'";
-	}
-	
-	cout << " "
-		 << (action == GLFW::InputAction::Press ? "pressed"
-			: action == GLFW::InputAction::Release ? "released"
-			: action == GLFW::InputAction::Repeat ? "repeated" : "")
-		<< std::endl;
-	
-	if (key == GLFW::KeyCode::Escape && action == GLFW::InputAction::Press) {
-		window.setShouldClose(true);
+	if (action == GLFW::InputAction::Press) {
+		switch (key) {
+		case GLFW::KeyCode::Escape:
+		case GLFW::KeyCode::Q:
+			window.setShouldClose(true);
+			break;
+			
+		case GLFW::KeyCode::F:
+			cout << "Wireframe mode: "
+			     << (renderer_->toggleWireframeMode() ? "on" : "off")
+			     << endl;
+			break;
+			
+		default:
+			cout << "Unbound key pressed: ";
+			if (keyname == nullptr) {
+				cout << scancode << endl;
+			}
+			else {
+				cout << "'" << keyname << "'" << endl;
+			}
+			break;
+		}
 	}
 }
 

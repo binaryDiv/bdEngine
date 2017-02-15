@@ -12,9 +12,12 @@ int main(int argc, char* argv[]) {
 		// Initialize engine and components
 		engine.init();
 		
-		// std::cout << "press q to quit" << std::endl;
+		std::cout << "Key bindings:" << std::endl;
+		std::cout << "Q: quit application" << std::endl;
+		std::cout << "F: toggle wireframe mode" << std::endl;
 		// std::cout << "press k to turn left" << std::endl;
 		// std::cout << "press l to turn right" << std::endl;
+		std::cout << std::endl;
 		
 		// Handle control to engine
 		exitCode = engine.run();
