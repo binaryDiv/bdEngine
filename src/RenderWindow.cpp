@@ -28,7 +28,7 @@ RenderWindow::RenderWindow()
 	GLFW::setWindowHint(GLFW::WindowHint::OpenGLProfile, GLFW::OpenGLProfile::Core);
 	
 	// Create GLFW::Window instance (which will actually create and open the window)
-	window_ = std::make_unique<GLFW::Window>(640, 480, "bdEngine test application");
+	window_ = std::make_unique<GLFW::Window>(800, 600, "bdEngine test application");
 	
 	// Make context current
 	GLFW::makeContextCurrent(*window_);

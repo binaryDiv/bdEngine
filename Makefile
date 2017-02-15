@@ -7,7 +7,7 @@ GL_INCLUDES := $(shell pkg-config --cflags glfw3 glew)
 # C++ flags
 CXX := clang++
 CXXFLAGS := -std=c++14 -O2 -g -Wall -pedantic
-LIBS := $(GL_LIBS)
+LIBS := $(GL_LIBS) -lSOIL
 INCLUDES := $(GL_INCLUDES)
 
 # Project directories

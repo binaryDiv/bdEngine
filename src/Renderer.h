@@ -6,6 +6,8 @@
 #include "GLFWpp.h"
 
 #include "GLShaderProgram.h"
+#include "Image.h"
+#include "Texture2D.h"
 
 namespace bdEngine {
 
@@ -45,6 +47,10 @@ private:
 	GLuint exVAO;  // Vertex Array Object
 	GLuint exVBO;  // Vertex Buffer Object
 	GLuint exEBO;  // Element Buffer Object
+	
+	// Example textures
+	Texture2D exTexture1;
+	Texture2D exTexture2;
 	
 	// Settings
 	bool wireframeMode = false;

@@ -12,12 +12,16 @@ const GLchar* vertexShaderSrc = R"__SRC__(
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 color;
+layout (location = 2) in vec2 texCoord;
 
 out vec3 fragColor;
+out vec2 fragTexCoord;
 
 void main() {
 	gl_Position = vec4(position.xyz, 1.0);
 	fragColor = color;
+	// Flip texture coordinates vertically because otherwise textures are upside down.
+	fragTexCoord = vec2(texCoord.x, 1 - texCoord.y);
 }
 
 )__SRC__";
@@ -27,11 +31,15 @@ const GLchar* fragShaderSrc = R"__SRC__(
 #version 330 core
 
 in vec3 fragColor;
+in vec2 fragTexCoord;
 out vec4 color;
+
+uniform sampler2D texSampler1;
+uniform sampler2D texSampler2;
 
 void main() {
 	//color = vec4(0.9, 0.2, 0.6, 1);
-	color = vec4(fragColor, 1.0);
+	color = mix(texture(texSampler1, fragTexCoord), texture(texSampler2, fragTexCoord), 0.5);
 }
 
 )__SRC__";
@@ -51,20 +59,21 @@ Renderer::Renderer()
 	// shaderProgram.useProgram();
 	// TODO delete shaders after linking?
 	
+	
 	// -- Define some objects to render
 	
 	// Example object
 	GLfloat vertices[] = {
-		// Positions xyz     // Colors rgb
-		 0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,  // 0: top right
-		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // 1: bottom right
-		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // 2: bottom left
-		-0.5f,  0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // 3: top left
+		// Positions xyz     // Colors rgb      // Texture coords
+		 0.7f,  0.7f, 0.0f,  0.0f, 0.0f, 1.0f,  1.0f, 1.0f,  // 0: top right
+		 0.7f, -0.7f, 0.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f,  // 1: bottom right
+		-0.7f, -0.7f, 0.0f,  0.0f, 1.0f, 0.0f,  0.0f, 0.0f,  // 2: bottom left
+		-0.7f,  0.7f, 0.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,  // 3: top left
 	};
 	
 	GLuint indices[] = {
-		0, 1, 2,  // first triangle
-		2, 3, 0,  // second triangle
+		0, 1, 3,  // first triangle
+		1, 2, 3,  // second triangle
 	};
 	
 	// Generate Vertex Array Object and Vertex Buffer Object
@@ -85,14 +94,31 @@ Renderer::Renderer()
 	
 	// Set vertex attributes pointers:
 	// -> location 0: position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	// -> location 1: color
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(1);
+	// -> location 2: texCoord
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+	glEnableVertexAttribArray(2);
 	
 	// Unbind VAO
 	glBindVertexArray(0);
+	
+	
+	// -- Load/create textures
+	// TODO Error handling with exceptions
+	
+	// Load image data and create example texture 1
+	// Image img {"res/textures/bg_honk.png"};
+	Image img {"res/textures/bg_clouds.png"};
+	exTexture1 = Texture2D {img};
+	
+	// Load image data and create example texture 2
+	// img = Image {"res/textures/gamzee.png"};
+	img = Image {"res/textures/john.png"};
+	exTexture2 = Texture2D {img};
 	
 	
 	// -- Set up some OpenGL settings
@@ -123,8 +149,19 @@ void Renderer::drawFrame() {
 	glClear(GL_COLOR_BUFFER_BIT);
 	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); XXX
 	
-	// Draw example object
+	// Activate shader
 	shaderProgram.useProgram();
+	
+	// Bind textures
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, exTexture1.getTextureID());
+	glUniform1i(shaderProgram.getUniformLocation("texSampler1"), 0);
+	
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, exTexture2.getTextureID());
+	glUniform1i(shaderProgram.getUniformLocation("texSampler2"), 1);
+	
+	// Draw example object
 	glBindVertexArray(exVAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
